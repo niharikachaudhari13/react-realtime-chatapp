@@ -112,8 +112,9 @@ const Room = () => {
         console.log('MESSAGE:', messageBody)
 
         const permissions = [
-            Permission.write(Role.user(user.$id)),
-          ]
+            Permission.read(Role.users()),   // All authenticated users can read
+            Permission.write(Role.users()),  // All authenticated users can write
+        ]
 
         const payload = {
             user_id:user.$id,
