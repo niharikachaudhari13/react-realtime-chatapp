@@ -1,11 +1,13 @@
 import React, {useState, useEffect, useRef} from 'react'
-import client, { databases, DATABASE_ID, COLLECTION_ID_MESSAGES } from '../appwriteConfig'
+import client, { databases, DATABASE_ID, COLLECTION_ID_MESSAGES, TYPING_COLLECTION_ID } from '../appwriteConfig'
 import { ID, Query, Permission, Role} from 'appwrite';
 import Header from '../components/Header';
 import { useAuth } from '../utils/AuthContext';
 import {Trash2, Smile, MoreHorizontal} from 'react-feather'
 import { formatMessageTime, formatFullTime } from '../utils/timeUtils'
 import Notification from '../components/Notification'
+
+
 
 const Room = () => {
     const [messageBody, setMessageBody] = useState('')
@@ -17,6 +19,7 @@ const Room = () => {
     const {user} = useAuth()
     const textareaRef = useRef(null)
     const typingTimeoutRef = useRef(null)
+    const typingStatusTimeoutRef = useRef(null)
 
     const reactions = ['👍', '❤️', '😂', '😮', '😢', '😡']
 
@@ -68,6 +71,41 @@ const Room = () => {
           unsubscribe();
         };
       }, []);
+
+    // Subscribe to typing status changes
+    useEffect(() => {
+        // Subscribe to typing status updates
+        const unsubscribeTyping = client.subscribe(
+            `databases.${DATABASE_ID}.collections.${TYPING_COLLECTION_ID}.documents`,
+            response => {
+                // Only interested in create/update events
+                if (
+                    response.events.some(event => event.includes('create')) ||
+                    response.events.some(event => event.includes('update'))
+                ) {
+                    const doc = response.payload;
+                    setTypingUsers(prev => {
+                        // Remove if already exists
+                        const filtered = prev.filter(u => u.user_id !== doc.user_id);
+                        // Only add if isTyping and not self
+                        if (doc.isTyping && doc.user_id !== user.$id) {
+                            return [...filtered, doc];
+                        } else {
+                            return filtered;
+                        }
+                    });
+                }
+                // Remove on delete
+                if (response.events.some(event => event.includes('delete'))) {
+                    const doc = response.payload;
+                    setTypingUsers(prev => prev.filter(u => u.user_id !== doc.user_id));
+                }
+            }
+        );
+        return () => {
+            unsubscribeTyping();
+        };
+    }, [user.$id]);
 
     const getMessages = async () => {
         const response = await databases.listDocuments(
@@ -153,21 +191,62 @@ const Room = () => {
         }
     }
 
+    // Helper to set typing status in Appwrite
+    const setTypingStatus = async (isTyping) => {
+        if (!user) return;
+        try {
+            // Try to update, if fails (not exists), create
+            await databases.updateDocument(
+                DATABASE_ID,
+                TYPING_COLLECTION_ID,
+                user.$id,
+                {
+                    user_id: user.$id,
+                    username: user.name,
+                    isTyping,
+                    room_id: 'main', // or your room logic
+                    updatedAt: new Date().toISOString()
+                }
+            );
+        } catch (err) {
+            // If not found, create
+            try {
+                await databases.createDocument(
+                    DATABASE_ID,
+                    TYPING_COLLECTION_ID,
+                    user.$id,
+                    {
+                        user_id: user.$id,
+                        username: user.name,
+                        isTyping,
+                        room_id: 'main',
+                        updatedAt: new Date().toISOString()
+                    },
+                    [
+                        Permission.read(Role.users()),
+                        Permission.write(Role.users())
+                    ]
+                );
+            } catch (e) {
+                // Ignore if still fails
+            }
+        }
+    };
+
     const handleTyping = (e) => {
         setMessageBody(e.target.value)
-        
         if (!isTyping) {
             setIsTyping(true)
+            setTypingStatus(true)
         }
-
         // Clear existing timeout
         if (typingTimeoutRef.current) {
             clearTimeout(typingTimeoutRef.current)
         }
-
         // Set new timeout
         typingTimeoutRef.current = setTimeout(() => {
             setIsTyping(false)
+            setTypingStatus(false)
         }, 2000)
     }
 
@@ -254,6 +333,13 @@ const Room = () => {
         }
      } 
 
+    // On unmount, set typing status to false
+    useEffect(() => {
+        return () => {
+            setTypingStatus(false)
+        }
+    }, [])
+
   return (
     <main className="container">
         <Header/>
@@ -286,7 +372,12 @@ const Room = () => {
                     </div>
                 </div>
             )}
-        
+
+            {typingUsers.length > 0 && (
+                <div className="typing-indicator">
+                    <span>{typingUsers.map(u => u.username).join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing...</span>
+                </div>
+            )}
 
         <div>
                 {messages.map(message => {
@@ -411,17 +502,17 @@ const Room = () => {
                     )
                 })}
             </div>
-                </div>
+        </div> {/* End of .room--container */}
 
-            {/* Notifications */}
-            {notifications.map(notification => (
-                <Notification
-                    key={notification.id}
-                    message={notification.message}
-                    type={notification.type}
-                    onClose={() => removeNotification(notification.id)}
-                />
-            ))}
+        {/* Notifications */}
+        {notifications.map(notification => (
+            <Notification
+                key={notification.id}
+                message={notification.message}
+                type={notification.type}
+                onClose={() => removeNotification(notification.id)}
+            />
+        ))}
     </main>
   )
 }

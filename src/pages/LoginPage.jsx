@@ -26,49 +26,49 @@ const LoginPage = () => {
     }
 
   return (
+    <div className="auth--container">
+      <div className="form--box minimalist-box">
+        <div className="form--wrapper">
+          <form onSubmit={(e) => {handleUserLogin(e, credentials)}}>
+            <div className="field--wrapper">
+              <label>Email:</label>
+              <input 
+              required
+              type="email"
+              name="email"
+              placeholder="Enter your email..."
+              value={credentials.email}
+              onChange={(e) => {handleInputChange(e)}}
+              />
+            </div>
 
-      <div className="auth--container">
-          <div className="form--wrapper">
-            <form onSubmit={(e) => {handleUserLogin(e, credentials)}}>
-                <div className="field--wrapper">
-                  <label>Email:</label>
-                  <input 
-                  required
-                  type="email"
-                  name="email"
-                  placeholder="Enter your email..."
-                  value={credentials.email}
-                  onChange={(e) => {handleInputChange(e)}}
-                  />
-                </div>
+            <div  className="field--wrapper">
+              <label>Password:</label>
+              <input 
+              required
+              type="password"
+              name="password"
+              placeholder="Enter password..."
+              value={credentials.password}
+              onChange={(e) => {handleInputChange(e)}}
+              />
+            </div>
 
-                <div  className="field--wrapper">
-                  <label>Password:</label>
-                  <input 
-                  required
-                  type="password"
-                  name="password"
-                  placeholder="Enter password..."
-                  value={credentials.password}
-                  onChange={(e) => {handleInputChange(e)}}
-                  />
-                </div>
+            <div className="field--wrapper">
 
-                <div className="field--wrapper">
+              <input 
+              type="submit"
+              value="Login"
+              className="btn btn--lg btn--main"
+              />
 
-                  <input 
-                  type="submit"
-                  value="Login"
-                  className="btn btn--lg btn--main"
-                  />
+            </div>
+          </form>
 
-                </div>
-            </form>
-
-            <p>Dont have an account? Register <Link to="/register">here</Link></p>
-          </div>
+          <p>Dont have an account? Register <Link to="/register">here</Link></p>
+        </div>
       </div>
-
+    </div>
   )
 }
 

@@ -21,10 +21,10 @@ const RegisterPage = () => {
 
   return (
     <div className="auth--container">
-      <div className="form--wrapper">
-
-        <form onSubmit={(e) => {handleRegister(e, credentials)}}>
-          <div className="field--wrapper">
+      <div className="form--box minimalist-box">
+        <div className="form--wrapper">
+          <form onSubmit={(e) => {handleRegister(e, credentials)}}>
+            <div className="field--wrapper">
                 <label>Name:</label>
                 <input 
                   required
@@ -75,9 +75,10 @@ const RegisterPage = () => {
             <div className="field--wrapper">
                 <input className="btn btn--lg btn--main" type="submit" value="Register"/>
             </div>
-        </form>
+          </form>
 
-        <p>Already have an account? Login <Link to="/login">here</Link></p>
+          <p>Already have an account? Login <Link to="/login">here</Link></p>
+        </div>
       </div>
     </div>
   )
