@@ -5,7 +5,7 @@ A chat app with real-time capabilities that utilizes Appwrite on the backend.
 
 
 
-## ✨ New Features Added
+## ✨Features Added
 
 - **🌙 Dark/Light Theme Toggle** - Switch between dark and light themes
 - **😊 Message Reactions** - React to messages with emojis (👍, ❤️, 😂, 😮, 😢, 😡)
@@ -82,7 +82,7 @@ In your appwrite console create a project and database.
 Once you've set up your project you should be able to update all necessary env variables.
 Run your development server to view the output.
 
-## 🚀 How to Use New Features
+## 🚀 How to Use Features
 
 ### Theme Toggle
 - Click the sun/moon icon in the header to switch between dark and light themes
@@ -101,11 +101,4 @@ Run your development server to view the output.
 - Get instant feedback for actions like sending messages, adding reactions, and deleting messages
 - Notifications automatically disappear after 3 seconds
 
-## 🛠️ Technical Improvements
 
-- **CSS Variables** for easy theme switching
-- **Custom Hooks** for reusable logic
-- **Utility Functions** for time formatting
-- **Component Composition** for better code organization
-- **Error Handling** with user-friendly notifications
-- **Responsive Design** with mobile-first approach
