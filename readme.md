@@ -3,7 +3,7 @@
 A chat app with real-time capabilities that utilizes Appwrite on the backend.
 
 
-<img src="images/demo.png"/>
+
 
 ## ✨ New Features Added
 
